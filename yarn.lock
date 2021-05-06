@@ -99,6 +99,11 @@ ap@~0.1.0:
   resolved "https://registry.yarnpkg.com/ap/-/ap-0.1.0.tgz#d8a3f26615379398a1b53ca6cc1a666a0fbfe150"
   integrity sha1-2KPyZhU3k5ihtTymzBpmag+/4VA=
 
+arabic-persian-reshaper@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/arabic-persian-reshaper/-/arabic-persian-reshaper-1.0.1.tgz#2f3658a449fa21ed1cc11e35f8161a3a874fee1f"
+  integrity sha512-VYBjkhz6o4W1Xt4mD2LAReljJpLSw5CUZMqSBDIQRvFgUSlTKEYghapgBWvkeMWF4W+KF3Fm+/z8EywJU4PBeg==
+
 arr-diff@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/arr-diff/-/arr-diff-2.0.0.tgz#8f3b827f955a8bd669697e4a4256ac3ceae356cf"

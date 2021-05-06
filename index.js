@@ -1,6 +1,7 @@
 const wordWrap = require('word-wrapper')
 const xtend = require('xtend')
 const number = require('as-number')
+const reshaper = require('arabic-persian-reshaper');
 
 const X_HEIGHTS = ['x', 'e', 'a', 'o', 'n', 's', 'r', 'c', 'u', 'm', 'v', 'w', 'z']
 const M_WIDTHS = ['m', 'w']
@@ -35,6 +36,8 @@ TextLayout.prototype.update = function(opt) {
 
   let glyphs = this.glyphs
   let text = opt.text||'' 
+  text = reshaper.ArabicShaper.convertArabic(text);
+
   let font = opt.font
   this._setupSpaceGlyphs(font)
   
