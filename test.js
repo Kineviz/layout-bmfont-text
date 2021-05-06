@@ -1,42 +1,36 @@
-var test = require('tape')
-var createLayout = require('./')
-var font = require('bmfont-lato')
-var indexOf = require('indexof-property')('id')
+const test = require('tape')
+const createLayout = require('./')
+const font = require('./demo/NotoSans-Regular.json');
 
 test('should export API', function(t) {
   t.throws(createLayout.bind(null, { font: null }), 'should throw error')
+  const xGlyph = font.charsMap["x"];
+  if (!xGlyph)
+    t.fail('no x character in font');
   
-  var xIdx = indexOf(font.chars, 'x'.charCodeAt(0))
-  if (!xIdx)
-    t.fail('no x character in font')
-  var xGlyph = font.chars[xIdx]
-  var xHeight = 20
-  var baseline = 32
-  var lineHeight = 38
-  var descender = lineHeight - baseline
-  xGlyph.height = xHeight
-  xGlyph.width = 17
-  xGlyph.xoffset = 2
-  font.common.lineHeight = lineHeight
-  font.common.base = baseline
-
-  var layout = createLayout({
+  xGlyph._x = 0;
+  const xHeight = xGlyph.h
+  const baseline = font.common.base
+  const lineHeight = font.common.lineHeight
+  const descender = lineHeight - baseline
+ 
+  let layout = createLayout({
     text: 'x',
     font: font
   })
 
   t.equal(layout.height, lineHeight - descender, 'line height matches')
-  t.equal(layout.width, xGlyph.width + xGlyph.xoffset, 'width matches')
+  t.equal(layout.width, xGlyph.w + xGlyph._x, 'width matches')
   t.equal(layout.descender, lineHeight - baseline, 'descender matches')
   t.equal(layout.ascender, lineHeight - descender - xHeight, 'ascender matches')
   t.equal(layout.xHeight, xHeight, 'x-height matches')
   t.equal(layout.baseline, baseline, 'baseline matches')
   
-  layout = createLayout({
+ layout = createLayout({
     text: 'xx',
     font: font
   })
-  var lineWidth = xGlyph.xadvance + xGlyph.width + xGlyph.xoffset
+  const lineWidth = xGlyph.xA + xGlyph.w + xGlyph._x
   t.equal(layout.width, lineWidth, 'calculates whole width')
 
   layout = createLayout({
@@ -45,7 +39,7 @@ test('should export API', function(t) {
   })
   t.equal(layout.width, lineWidth, 'multi line width matches')
 
-  var spacing = 4
+  const spacing = 4
   layout = createLayout({
     text: 'xx',
     letterSpacing: spacing,

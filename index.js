@@ -1,15 +1,15 @@
-var wordWrap = require('word-wrapper')
-var xtend = require('xtend')
-var number = require('as-number')
+const wordWrap = require('word-wrapper')
+const xtend = require('xtend')
+const number = require('as-number')
 
-var X_HEIGHTS = ['x', 'e', 'a', 'o', 'n', 's', 'r', 'c', 'u', 'm', 'v', 'w', 'z']
-var M_WIDTHS = ['m', 'w']
-var CAP_HEIGHTS = ['H', 'I', 'N', 'E', 'F', 'K', 'L', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+const X_HEIGHTS = ['x', 'e', 'a', 'o', 'n', 's', 'r', 'c', 'u', 'm', 'v', 'w', 'z']
+const M_WIDTHS = ['m', 'w']
+const CAP_HEIGHTS = ['H', 'I', 'N', 'E', 'F', 'K', 'L', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
 
-var TAB_ID = '\t'.charCodeAt(0)
-var SPACE_ID = ' '.charCodeAt(0)
-var ALIGN_LEFT = 0, 
+const TAB_ID = '\t'
+const SPACE_ID = ' '
+const ALIGN_LEFT = 0, 
     ALIGN_CENTER = 1, 
     ALIGN_RIGHT = 2
 
@@ -33,31 +33,31 @@ TextLayout.prototype.update = function(opt) {
   if (!opt.font)
     throw new Error('must provide a valid bitmap font')
 
-  var glyphs = this.glyphs
-  var text = opt.text||'' 
-  var font = opt.font
+  let glyphs = this.glyphs
+  let text = opt.text||'' 
+  let font = opt.font
   this._setupSpaceGlyphs(font)
   
-  var lines = wordWrap.lines(text, opt)
-  var minWidth = opt.width || 0
+  let lines = wordWrap.lines(text, opt)
+  let minWidth = opt.width || 0
 
   //clear glyphs
   glyphs.length = 0
 
   //get max line width
-  var maxLineWidth = lines.reduce(function(prev, line) {
+  let maxLineWidth = lines.reduce(function(prev, line) {
     return Math.max(prev, line.width, minWidth)
   }, 0)
 
   //the pen position
-  var x = 0
-  var y = 0
-  var lineHeight = number(opt.lineHeight, font.common.lineHeight)
-  var baseline = font.common.base
-  var descender = lineHeight-baseline
-  var letterSpacing = opt.letterSpacing || 0
-  var height = lineHeight * lines.length - descender
-  var align = getAlignType(this._opt.align)
+  let x = 0
+  let y = 0
+  let lineHeight = number(opt.lineHeight, font.common.lineHeight)
+  let baseline = font.common.base
+  let descender = lineHeight-baseline
+  let letterSpacing = opt.letterSpacing || 0
+  let height = lineHeight * lines.length - descender
+  let align = getAlignType(this._opt.align)
 
   //draw text along baseline
   y -= height
@@ -73,22 +73,22 @@ TextLayout.prototype.update = function(opt) {
   this._ascender = lineHeight - descender - this._xHeight
     
   //layout each glyph
-  var self = this
+  let self = this
   lines.forEach(function(line, lineIndex) {
-    var start = line.start
-    var end = line.end
-    var lineWidth = line.width
-    var lastGlyph
+    let start = line.start
+    let end = line.end
+    let lineWidth = line.width
+    let lastGlyph
     
     //for each glyph in that line...
-    for (var i=start; i<end; i++) {
-      var id = text.charCodeAt(i)
-      var glyph = self.getGlyph(font, id)
+    for (let i=start; i<end; i++) {
+      let id = text.charAt(i)
+      let glyph = self.getGlyph(font, id)
       if (glyph) {
         if (lastGlyph) 
           x += getKerning(font, lastGlyph.id, glyph.id)
 
-        var tx = x
+        let tx = x
         if (align === ALIGN_CENTER) 
           tx += (maxLineWidth-lineWidth)/2
         else if (align === ALIGN_RIGHT)
@@ -102,7 +102,7 @@ TextLayout.prototype.update = function(opt) {
         })  
 
         //move pen forward
-        x += glyph.xadvance + letterSpacing
+        x += glyph.xA + letterSpacing
         lastGlyph = glyph
       }
     }
@@ -120,27 +120,29 @@ TextLayout.prototype._setupSpaceGlyphs = function(font) {
   this._fallbackSpaceGlyph = null
   this._fallbackTabGlyph = null
 
-  if (!font.chars || font.chars.length === 0)
+  if (!font.charsMap)
     return
 
   //try to get space glyph
   //then fall back to the 'm' or 'w' glyphs
   //then fall back to the first glyph available
-  var space = getGlyphById(font, SPACE_ID) 
+  let space = findChar(font, SPACE_ID) 
           || getMGlyph(font) 
-          || font.chars[0]
+
+  if(!space)
+    return;
 
   //and create a fallback for tab
-  var tabWidth = this._opt.tabSize * space.xadvance
+  let tabWidth = this._opt.tabSize * space.xA;
   this._fallbackSpaceGlyph = space
   this._fallbackTabGlyph = xtend(space, {
-    x: 0, y: 0, xadvance: tabWidth, id: TAB_ID, 
-    xoffset: 0, yoffset: 0, width: 0, height: 0
+    x: 0, y: 0, xA: tabWidth, id:  TAB_ID.charCodeAt(0), 
+    _x: 0, _y: 0, w: 0, h: 0
   })
 }
 
 TextLayout.prototype.getGlyph = function(font, id) {
-  var glyph = getGlyphById(font, id)
+  let glyph = findChar(font, id)
   if (glyph)
     return glyph
   else if (id === TAB_ID) 
@@ -151,15 +153,15 @@ TextLayout.prototype.getGlyph = function(font, id) {
 }
 
 TextLayout.prototype.computeMetrics = function(text, start, end, width) {
-  var letterSpacing = this._opt.letterSpacing || 0
-  var font = this._opt.font
-  var curPen = 0
-  var curWidth = 0
-  var count = 0
-  var glyph
-  var lastGlyph
+  let letterSpacing = this._opt.letterSpacing || 0
+  let font = this._opt.font
+  let curPen = 0
+  let curWidth = 0
+  let count = 0
+  let glyph
+  let lastGlyph
 
-  if (!font.chars || font.chars.length === 0) {
+  if (!font.charsMap) {
     return {
       start: start,
       end: start,
@@ -168,18 +170,18 @@ TextLayout.prototype.computeMetrics = function(text, start, end, width) {
   }
 
   end = Math.min(text.length, end)
-  for (var i=start; i < end; i++) {
-    var id = text.charCodeAt(i)
-    var glyph = this.getGlyph(font, id)
+  for (let i=start; i < end; i++) {
+    let id = text.charAt(i)
+    glyph = this.getGlyph(font, id)
 
     if (glyph) {
       //move pen forward
-      var xoff = glyph.xoffset
-      var kern = lastGlyph ? getKerning(font, lastGlyph.id, glyph.id) : 0
+     // let xoff = glyph._x
+      let kern = lastGlyph ? getKerning(font, lastGlyph.id, glyph.id) : 0
       curPen += kern
 
-      var nextPen = curPen + glyph.xadvance + letterSpacing
-      var nextWidth = curPen + glyph.width
+      let nextPen = curPen + glyph.xA + letterSpacing
+      let nextWidth = curPen + glyph.w
 
       //we've hit our limit; we can't move onto the next glyph
       if (nextWidth >= width || nextPen >= width)
@@ -195,7 +197,7 @@ TextLayout.prototype.computeMetrics = function(text, start, end, width) {
   
   //make sure rightmost edge lines up with rendered glyphs
   if (lastGlyph)
-    curWidth += lastGlyph.xoffset
+    curWidth += lastGlyph._x || 0
 
   return {
     start: start,
@@ -227,57 +229,48 @@ function wrapper(name) {
   ].join('\n')))()
 }
 
-function getGlyphById(font, id) {
-  if (!font.chars || font.chars.length === 0)
-    return null
-
-  var glyphIdx = findChar(font.chars, id)
-  if (glyphIdx >= 0)
-    return font.chars[glyphIdx]
-  return null
-}
-
 function getXHeight(font) {
-  for (var i=0; i<X_HEIGHTS.length; i++) {
-    var id = X_HEIGHTS[i].charCodeAt(0)
-    var idx = findChar(font.chars, id)
-    if (idx >= 0) 
-      return font.chars[idx].height
+  for (let i=0; i<X_HEIGHTS.length; i++) {
+    let char = findChar(font, X_HEIGHTS[i])
+    if (char) 
+      return char.h || 0
   }
   return 0
 }
 
 function getMGlyph(font) {
-  for (var i=0; i<M_WIDTHS.length; i++) {
-    var id = M_WIDTHS[i].charCodeAt(0)
-    var idx = findChar(font.chars, id)
-    if (idx >= 0) 
-      return font.chars[idx]
+  for (let i=0; i<M_WIDTHS.length; i++) {
+     let char = findChar(font, M_WIDTHS[i]);
+    if (char) 
+      return char
   }
-  return 0
+  
+  if(!font.info)
+    return null
+
+  for (let i=0; i< font.info.charset.length; i++) {
+    let char = findChar(font, font.info.charset[i]);
+   if (char) 
+     return char
+ }
+ 
+  return null
 }
 
 function getCapHeight(font) {
-  for (var i=0; i<CAP_HEIGHTS.length; i++) {
-    var id = CAP_HEIGHTS[i].charCodeAt(0)
-    var idx = findChar(font.chars, id)
-    if (idx >= 0) 
-      return font.chars[idx].height
+  for (let i=0; i<CAP_HEIGHTS.length; i++) {
+     let char = findChar(font,  CAP_HEIGHTS[i])
+    if (char) 
+      return char.h || 0
   }
   return 0
 }
 
 function getKerning(font, left, right) {
-  if (!font.kernings || font.kernings.length === 0)
+  if (!font.kerningsMap)
     return 0
 
-  var table = font.kernings
-  for (var i=0; i<table.length; i++) {
-    var kern = table[i]
-    if (kern.first === left && kern.second === right)
-      return kern.amount
-  }
-  return 0
+  return font.kerningsMap[`${left}${right}`] || 0;
 }
 
 function getAlignType(align) {
@@ -288,12 +281,20 @@ function getAlignType(align) {
   return ALIGN_LEFT
 }
 
-function findChar (array, value, start) {
-  start = start || 0
-  for (var i = start; i < array.length; i++) {
-    if (array[i].id === value) {
-      return i
-    }
+function findChar(font, key) {
+  if (!font || !font.charsMap || !font.charsMap[key])
+    return null
+  
+  let char = font.charsMap[key];
+  if(!char.xA){
+    char.xA = 0;
   }
-  return -1
+  if(!char._x){
+    char._x = 0;
+  }
+  if(!char._y){
+    char._y = 0;
+  }
+
+  return font.charsMap[key] || null;
 }
