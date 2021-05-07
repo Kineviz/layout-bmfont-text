@@ -11,7 +11,7 @@ Provides layout and word-wrapping for left-to-right Latin text, primarily aimed 
 You can use [bmfont-lato](https://www.npmjs.com/package/bmfont-lato) for testing, or [load-bmfont](https://www.npmjs.com/package/load-bmfont) for Node/Browser loading.
 
 ```js
-var createLayout = require('@lixuanxian/layout-bmfont-text')
+var createLayout = require('@kineviz/layout-bmfont-text')
 var loadFont = require('load-bmfont')
 
 loadFont('fonts/Arial.fnt', function(err, font) {

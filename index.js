@@ -6,7 +6,18 @@ const reshaper = require('arabic-persian-reshaper');
 const X_HEIGHTS = ['x', 'e', 'a', 'o', 'n', 's', 'r', 'c', 'u', 'm', 'v', 'w', 'z']
 const M_WIDTHS = ['m', 'w']
 const CAP_HEIGHTS = ['H', 'I', 'N', 'E', 'F', 'K', 'L', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-
+const ARABIC_CHARSET_RANGE = `
+  0600–06FF 
+  0750–077F 
+  08A0–08FF 
+  FB50–FDFF 
+  FE70–FEFF 
+  10E60–10E7F
+  1EC70–1ECBF 
+  1ED00–1ED4F
+  1EE00–1EEFF`.split("\n")
+  .map((range) => String(range).trim().replace(/\n|\t|\r/igm,""))
+  .filter((range) => range);
 
 const TAB_ID = '\t'
 const SPACE_ID = ' '
@@ -14,8 +25,52 @@ const ALIGN_LEFT = 0,
     ALIGN_CENTER = 1, 
     ALIGN_RIGHT = 2
 
-module.exports = function createLayout(opt) {
-  return new TextLayout(opt)
+const containArabic = (str) => {
+  let strArrayMap = {};
+  [...String(str)].forEach((strChar) => {
+    strArrayMap[strChar] = true;
+  });
+  if(Object.keys(strArrayMap).length === 0){
+    return false;
+  }
+
+  for (let index = 0; index < ARABIC_CHARSET_RANGE.length; index++) {
+    const range = ARABIC_CHARSET_RANGE[index];
+    if ((/\–/img).test(range)) {
+      let minMax = range.split((/\–/img)).map(v => Number(`0x${v}`));
+      for (const key in strArrayMap) {
+         if (key.charCodeAt(0) >= minMax[0] && key.charCodeAt(0) <= minMax[1]) {
+          return true;
+        }
+      }
+    } else if (strArrayMap[String.fromCharCode(Number(`0x${range}`))]) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const revertArabic = (str) => {
+  let strArr = [...str];
+  let newStrArr = [];
+  let arabicArr = [];
+  strArr.forEach((char,i) => {
+    if(containArabic(char)){
+      arabicArr.push(char);
+    }else if(char == ' ' &&  arabicArr.length > 0 && containArabic(strArr[i+1] || '')){
+      arabicArr.push(char);
+    }else if(arabicArr.length > 0){
+      newStrArr.push(...arabicArr.reverse());
+      arabicArr = [];
+      newStrArr.push(char);
+    }else{
+      newStrArr.push(char);
+    }
+  })
+  if(arabicArr.length > 0){
+    newStrArr.push(...arabicArr.reverse());
+  }
+  return newStrArr.join('');
 }
 
 function TextLayout(opt) {
@@ -36,7 +91,11 @@ TextLayout.prototype.update = function(opt) {
 
   let glyphs = this.glyphs
   let text = opt.text||'' 
-  text = reshaper.ArabicShaper.convertArabic(text);
+
+  if(containArabic(text)){
+    text = reshaper.ArabicShaper.convertArabic(text);
+    text = revertArabic(text);
+  }
 
   let font = opt.font
   this._setupSpaceGlyphs(font)
@@ -273,7 +332,7 @@ function getKerning(font, left, right) {
   if (!font.kerningsMap)
     return 0
 
-  return font.kerningsMap[`${left}${right}`] || 0;
+  return font.kerningsMap[`${left}-${right}`] || 0;
 }
 
 function getAlignType(align) {
@@ -301,3 +360,10 @@ function findChar(font, key) {
 
   return font.charsMap[key] || null;
 }
+
+
+module.exports = function createLayout(opt) {
+  return new TextLayout(opt)
+}
+
+module.exports.containArabic = containArabic;
