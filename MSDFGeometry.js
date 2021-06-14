@@ -5,6 +5,8 @@ import CreateLayout from "./index";
 
 const DEFAULT_MAX_CHARS = 0;
 const DEFAULT_SCALE = 2048;
+const DEFAULT_NODE_SIZE =  1.0;
+
 export default class MSDFGeometry extends THREE.BufferGeometry {
   constructor(props) {
     super();
@@ -90,6 +92,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       layout.y = text.y
       layout.z = text.z
       layout.opacity = text.opacity
+      layout.nodeSize = text.nodeSize
       return layout;
     });
     if (charNumbers != this.charNumbers) {
@@ -229,7 +232,8 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
         let bitmap = glyph.data;
 
         // bottom left position
-        let offsetX = 100
+        let offsetX = 100 + 60 *((layout.nodeSize || DEFAULT_NODE_SIZE) - DEFAULT_NODE_SIZE);
+
         let x = (glyph.position[0] + bitmap._x) / DEFAULT_SCALE * scale + offsetX / DEFAULT_SCALE;
         let y = (glyph.position[1] + bitmap._y + layout._height / 2) / DEFAULT_SCALE * scale;
         let z = 0
