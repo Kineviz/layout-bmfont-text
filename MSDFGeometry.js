@@ -14,6 +14,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.texture = props.texture;
     this.texts = props.texts;
     this.layouts = null
+    this.align = props.align || "left"
     let charNumbers = this.getCharNumbers(this.texts)
     this.scale = props.scale
     this.allocateMemory(charNumbers)
@@ -91,7 +92,8 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       return
     }
     this.layouts = this.texts.map((text, idx) => {
-      let opt = { font: this.font, text: text.text, align: "left", width: 600 };
+      let textWidth = text.text.length * 32
+      let opt = { font: this.font, text: text.text, align: "left", width:textWidth };
       let layout = CreateLayout(opt);
       layout.x = text.x
       layout.y = text.y
@@ -252,12 +254,15 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     let i = 0;
     let scale = this.scale+1.2;
     layouts.forEach(layout => {
-      layout.glyphs.forEach(function (glyph) {
+      layout.glyphs.forEach((glyph)=> {
         let bitmap = glyph.data;
 
         // bottom left position
         let offsetX = 100 + 60 *((layout.nodeSize || DEFAULT_NODE_SIZE) - DEFAULT_NODE_SIZE);
+        if(this.align == "center"){
+          offsetX = -(layout._width)/(2*scale) 
 
+        }
         let x = (glyph.position[0] + bitmap._x) / DEFAULT_SCALE * scale + offsetX / DEFAULT_SCALE;
         let y = (glyph.position[1] + bitmap._y + layout._height / 2) / DEFAULT_SCALE * scale;
         let z = 0
