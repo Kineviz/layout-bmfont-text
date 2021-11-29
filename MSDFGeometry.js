@@ -260,7 +260,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
         // bottom left position
         let offsetX = 100 + 60 *((layout.nodeSize || DEFAULT_NODE_SIZE) - DEFAULT_NODE_SIZE);
         if(this.align == "center"){
-          offsetX = -(layout._width)/(2*scale) 
+          offsetX = -layout._width/2 
 
         }
         let x = (glyph.position[0] + bitmap._x) / DEFAULT_SCALE * scale + offsetX / DEFAULT_SCALE;
