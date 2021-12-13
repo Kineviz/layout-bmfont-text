@@ -4,7 +4,7 @@ import CreateIndices from "quad-indices";
 import CreateLayout from "./index";
 
 const DEFAULT_MAX_CHARS = 0;
-const DEFAULT_SCALE = 2048;
+const DEFAULT_SCALE = 1024;
 const DEFAULT_NODE_SIZE =  1.0;
 
 export default class MSDFGeometry extends THREE.BufferGeometry {
@@ -14,7 +14,9 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.texture = props.texture;
     this.texts = props.texts;
     this.layouts = null
-    this.align = props.align || "left"
+    this.align = props.align || "right"
+    this.marginLeft = props.marginLeft || 0
+    this.marginTop= props.marginTop || 0
     let charNumbers = this.getCharNumbers(this.texts)
     this.scale = props.scale
     this.allocateMemory(charNumbers)
@@ -83,6 +85,10 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.scale = scale
   }
 
+  setAlign(align){
+    this.align = align
+  }
+
   update(texts = []) {
     this.texts = texts.filter(text => text.text != "")
     let charNumbers = this.getCharNumbers(texts)
@@ -92,8 +98,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       return
     }
     this.layouts = this.texts.map((text, idx) => {
-      let textWidth = text.text.length * 32
-      let opt = { font: this.font, text: text.text, align: "left", width:textWidth };
+      let opt = { font: this.font, text: text.text, align: "left"};
       let layout = CreateLayout(opt);
       layout.x = text.x
       layout.y = text.y
@@ -252,19 +257,19 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
 
     let positions = this.attributes.position.array;
     let i = 0;
-    let scale = this.scale+1.2;
+    let scale = this.scale;
     layouts.forEach(layout => {
+      let textHeight  = layout._height
       layout.glyphs.forEach((glyph)=> {
         let bitmap = glyph.data;
 
         // bottom left position
-        let offsetX = 100 + 60 *((layout.nodeSize || DEFAULT_NODE_SIZE) - DEFAULT_NODE_SIZE);
+        let offsetX = 0;
         if(this.align == "center"){
-          offsetX = -layout._width/2 
-
+          offsetX = -layout._width/2 * this.scale
         }
-        let x = (glyph.position[0] + bitmap._x) / DEFAULT_SCALE * scale + offsetX / DEFAULT_SCALE;
-        let y = (glyph.position[1] + bitmap._y + layout._height / 2) / DEFAULT_SCALE * scale;
+        let x = (glyph.position[0] + bitmap._x) / DEFAULT_SCALE * scale + offsetX / DEFAULT_SCALE + this.marginLeft;
+        let y = (glyph.position[1] + bitmap._y + textHeight/2  ) / DEFAULT_SCALE * scale + this.marginTop;
         let z = 0
 
         // quad size
