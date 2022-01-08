@@ -14,7 +14,8 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.texture = props.texture;
     this.texts = props.texts;
     this.layouts = null
-    this.align = props.align || "right"
+    this.align = props.align || "left"
+    this.position = props.position || "right"
     this.marginLeft = props.marginLeft || 0
     this.marginTop= props.marginTop || 0
     let charNumbers = this.getCharNumbers(this.texts)
@@ -89,6 +90,10 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.align = align
   }
 
+  setTextPosition(position){
+    this.position = position
+  }
+
   update(texts = []) {
     this.texts = texts.filter(text => text.text != "")
     let charNumbers = this.getCharNumbers(texts)
@@ -98,7 +103,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       return
     }
     this.layouts = this.texts.map((text, idx) => {
-      let opt = { font: this.font, text: text.text, align: "left"};
+      let opt = { font: this.font, text: text.text, align: this.align};
       let layout = CreateLayout(opt);
       layout.x = text.x
       layout.y = text.y
@@ -259,17 +264,29 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     let i = 0;
     let scale = this.scale;
     layouts.forEach(layout => {
-      let textHeight  = layout._height
+      let textHeight  = layout._linesTotal > 1?35 * layout._linesTotal:25
       layout.glyphs.forEach((glyph)=> {
         let bitmap = glyph.data;
 
         // bottom left position
         let offsetX = 0;
-        if(this.align == "center"){
+        let offsetY = 0
+        if(this.position == "right"){
+          offsetY = textHeight /2
+        }
+        else if(this.position == "bottom"){
+          offsetX = -layout._width/2 * this.scale
+          offsetY = textHeight 
+        }
+        else if(this.position == "top"){
           offsetX = -layout._width/2 * this.scale
         }
-        let x = (glyph.position[0] + bitmap._x) / DEFAULT_SCALE * scale + offsetX / DEFAULT_SCALE + this.marginLeft;
-        let y = (glyph.position[1] + bitmap._y + textHeight/2  ) / DEFAULT_SCALE * scale + this.marginTop;
+        else if(this.position == "top"){
+          offsetX = -layout._width/2 * this.scale
+        }
+
+        let x = (glyph.position[0] + bitmap._x + offsetX) / DEFAULT_SCALE * scale + this.marginLeft;
+        let y = (glyph.position[1] + bitmap._y + offsetY ) / DEFAULT_SCALE * scale + this.marginTop;
         let z = 0
 
         // quad size
