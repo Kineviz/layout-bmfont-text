@@ -279,11 +279,11 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
         } 
 
         if(this.align == "center") {
-          offsetX = (- layout._width * this.scale) / 2;
+          offsetX = - layout._width / 2;
         }else if(this.align == "right") {
           offsetX = 0;
         }else if(this.align == "left") {
-          offsetX = -layout._width * this.scale;
+          offsetX = -layout._width;
         }
        
 
