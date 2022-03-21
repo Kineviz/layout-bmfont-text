@@ -6,11 +6,6 @@ import CreateLayout from "./index";
 const DEFAULT_MAX_CHARS = 0;
 const DEFAULT_SCALE = 1024;
 const DEFAULT_NODE_SIZE =  1.0;
-const ALIGN_MAP = {
-  "right": "left",
-  "left": "right",
-  "center": "center"
-}
 export default class MSDFGeometry extends THREE.BufferGeometry {
   constructor(props) {
     super();
@@ -18,8 +13,11 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.texture = props.texture;
     this.texts = props.texts;
     this.layouts = null
+    this.width = props.width || 560;
     this.align = props.align || "left"; // left, center, right
     this.position = props.position || "center"; // top, center, bottom
+    this.textAlign = props.textAlign || "left"; // left, center, right ;
+
     this.marginLeft = props.marginLeft || 0
     this.marginTop= props.marginTop || 0
     let charNumbers = this.getCharNumbers(this.texts)
@@ -91,7 +89,11 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
   }
 
   setAlign(align){
-    this.align = align
+    this.align = align;
+  }
+
+  setTextAlign(textAlign) {
+    this.textAlign = textAlign || this.align ;
   }
 
   setTextPosition(position){
@@ -109,7 +111,12 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
 
     this.layouts = this.texts.map((text, idx) => {
       
-      let opt = { font: this.font, text: text.text, align: ALIGN_MAP[this.align] || this.align};
+      let opt = { 
+        font: this.font, 
+        text: text.text, 
+        align: this.textAlign,
+        width: this.width
+      };
       let layout = CreateLayout(opt);
       layout.x = text.x
       layout.y = text.y

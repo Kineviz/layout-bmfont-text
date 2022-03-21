@@ -101,7 +101,8 @@ TextLayout.prototype.update = function(opt) {
   this._setupSpaceGlyphs(font)
   
   let lines = wordWrap.lines(text, opt)
-  let minWidth = opt.width || 0
+  let minWidth = 0
+  let maxWidth = opt.width || 560;
 
   //clear glyphs
   glyphs.length = 0
@@ -125,7 +126,7 @@ TextLayout.prototype.update = function(opt) {
   y -= height
   
   //the metrics for this text layout
-  this._width = maxLineWidth
+  this._width = maxLineWidth > maxWidth ? maxWidth : maxLineWidth;
   this._height = height
   this._descender = lineHeight - baseline
   this._baseline = baseline
