@@ -6,7 +6,11 @@ import CreateLayout from "./index";
 const DEFAULT_MAX_CHARS = 0;
 const DEFAULT_SCALE = 1024;
 const DEFAULT_NODE_SIZE =  1.0;
-
+const ALIGN_MAP = {
+  "right": "left",
+  "left": "right",
+  "center": "center"
+}
 export default class MSDFGeometry extends THREE.BufferGeometry {
   constructor(props) {
     super();
@@ -102,8 +106,10 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       this.clear()
       return
     }
+
     this.layouts = this.texts.map((text, idx) => {
-      let opt = { font: this.font, text: text.text, align: this.align};
+      
+      let opt = { font: this.font, text: text.text, align: ALIGN_MAP[this.align] || this.align};
       let layout = CreateLayout(opt);
       layout.x = text.x
       layout.y = text.y
