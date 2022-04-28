@@ -1,6 +1,6 @@
 {
   "name": "@kineviz/layout-bmfont-text",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "description": "word-wraps and lays out text glyphs",
   "main": "index.js",
   "license": "MIT",
