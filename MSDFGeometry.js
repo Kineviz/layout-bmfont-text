@@ -319,7 +319,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     let i = 0;
     let scale = this.scale;
     layouts.forEach(layout => {
-      let textHeight  = layout._linesTotal > 1 ? 35 * layout._linesTotal : 25;
+      let textHeight  = layout._height
       layout.glyphs.forEach((glyph)=> {
         let bitmap = glyph.data;
 
