@@ -50,6 +50,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     let uvs = new Float32Array(charNumbers * 4 * 2);
     let opacity = new Float32Array(charNumbers * 4 * 1);
     let rotation = new Float32Array(charNumbers * 4 * 1);
+    let quaternion = new Float32Array(charNumbers * 4 * 4);
 
     let indexAttr = new THREE.BufferAttribute(indices,1,false)
     let positionAttr = new THREE.BufferAttribute(positions,3,false)
@@ -57,6 +58,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     let uvsAttr = new THREE.BufferAttribute(uvs,2,false)
     let opacityAttr = new THREE.BufferAttribute(opacity,1,false)
     let rotationAttr = new THREE.BufferAttribute(rotation,1,false)
+    let quaternionAttr = new THREE.BufferAttribute(quaternion,4,false)
 
     this.setIndex(indexAttr)
     this.setAttribute("position",positionAttr)
@@ -64,6 +66,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.setAttribute("uv",uvsAttr)
     this.setAttribute("opacity",opacityAttr)
     this.setAttribute("rotation",rotationAttr)
+    this.setAttribute("quaternion",quaternionAttr)
   }
 
   clear() {
@@ -73,6 +76,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.attributes.opacity ? this.attributes.opacity.array.fill(0) : null
     this.attributes.uv ? this.attributes.uv.array.fill(0) : null
     this.attributes.rotation ? this.attributes.rotation.array.fill(0) : null
+    this.attributes.quaternion ? this.attributes.quaternion.array.fill(0) : null
     if (this.index) {
       this.index.needsUpdate = true
       this.attributes.position.needsUpdate = true
@@ -80,6 +84,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       this.attributes.opacity.needsUpdate = true
       this.attributes.uv.needsUpdate = true
       this.attributes.rotation.needsUpdate = true
+      this.attributes.quaternion.needsUpdate = true
       this.verticesNeedUpdate = true
     }
   }
@@ -124,6 +129,8 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
       layout.opacity = text.opacity
       layout.nodeSize = text.nodeSize
       layout.angle = text.angle
+      layout.angleXZ = text.angleXZ
+      layout.quaternion = text.quaternion
       return layout;
     });
     if (charNumbers != this.charNumbers) {
@@ -139,6 +146,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.getNodePositions(this.layouts)
     this.getOpacity(this.layouts)
     this.getRotation(this.layouts)
+    this.getQuaternion(this.layouts)
 
     this.index.needsUpdate = true
     this.attributes.position.needsUpdate = true
@@ -146,6 +154,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     this.attributes.opacity.needsUpdate = true
     this.attributes.uv.needsUpdate = true
     this.attributes.rotation.needsUpdate = true
+    this.attributes.quaternion.needsUpdate = true
     this.verticesNeedUpdate = true
 
   }
@@ -221,6 +230,39 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     return rotation;
   }
 
+  getQuaternion(layouts) {
+    let rotation = this.attributes.quaternion.array;
+    let i = 0;
+    layouts.forEach(layout => {
+      layout.glyphs.forEach(function (glyph) {
+
+        let r = layout.quaternion?layout.quaternion:0;
+
+        rotation[i++] = r.x?r.x:0;
+        rotation[i++] = r.y?r.y:0;
+        rotation[i++] = r.z?r.z:0;
+        rotation[i++] = r.w?r.w:0;
+
+        rotation[i++] = r.x?r.x:0;
+        rotation[i++] = r.y?r.y:0;
+        rotation[i++] = r.z?r.z:0;
+        rotation[i++] = r.w?r.w:0;
+
+        rotation[i++] = r.x?r.x:0;
+        rotation[i++] = r.y?r.y:0;
+        rotation[i++] = r.z?r.z:0;
+        rotation[i++] = r.w?r.w:0;
+
+        rotation[i++] = r.x?r.x:0;
+        rotation[i++] = r.y?r.y:0;
+        rotation[i++] = r.z?r.z:0;
+        rotation[i++] = r.w?r.w:0;
+
+      });
+    });
+    return rotation;
+  }
+
   getOpacity(layouts) {
     let opacity = this.attributes.opacity.array;
     let i = 0;
@@ -277,7 +319,7 @@ export default class MSDFGeometry extends THREE.BufferGeometry {
     let i = 0;
     let scale = this.scale;
     layouts.forEach(layout => {
-      let textHeight  = layout._linesTotal > 1 ? 35 * layout._linesTotal : 25;
+      let textHeight  = layout._height
       layout.glyphs.forEach((glyph)=> {
         let bitmap = glyph.data;
 
