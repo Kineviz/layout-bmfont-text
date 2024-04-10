@@ -34,7 +34,8 @@
     "test": "node test",
     "build": "browserify demo/index.js -t babelify | uglifyjs -cm > demo/bundle.js",
     "start": "budo demo/index.js -o demo/bundle.js --live -d -t babelify | garnish -v",
-    "stress": "budo demo/stress.js -o demo/bundle-stress.js --live -d -t babelify | garnish -v"
+    "stress": "budo demo/stress.js -o demo/bundle-stress.js --live -d -t babelify | garnish -v",
+    "release": "npm publish --access=public --scope=@kineviz --registry=https://registry.npmjs.org"
   },
   "keywords": [
     "left",
